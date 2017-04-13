@@ -28,6 +28,10 @@
             .user-connected {
                 display: none;
             }
+            .user-connected ul {
+                max-height: 70vh;
+                overflow-y: auto;
+            }
             .user-connected ul li {
                 width: 90%;
                 margin: auto;
@@ -70,6 +74,7 @@
         <div class="user-connected">
             <ul></ul>
             <div class="message-input input-wrapper">
+                <p id="users-typing"></p>
                 <input type="text" id="user-message" placeholder="Enter your message"/>
                 <button>Send</button>
             </div>
@@ -85,27 +90,52 @@
                     messageListEl = $('.user-connected ul');
 
                 $('.user-disconnected button').on('click', function($event) {
+                    checkUserName();
+                });
+
+                $('.user-connected .message-input button').on('click', function($event) {
+                    checkMessage();
+                });
+
+                userNameEl.on('keyup', function($event) {
+                    if ($event.keyCode === 13) {
+                        checkUserName();
+                    }
+                });
+
+                messageEl.on('keyup', function($event) {
+                    if ($event.keyCode === 13) {
+                        checkMessage();
+                    } else if ($event.keyCode === 8 && messageEl.val().length === 0) {
+                        userStopTyping();
+                    } else {
+                        userTyping();
+                    }
+                });
+
+                function checkUserName() {
                     userName = userNameEl.val();
                     if (userName !== "") {
                         initSocket();
                     }
-                });
+                }
 
-                $('.user-connected .message-input button').on('click', function($event) {
+                function checkMessage() {
                     message = messageEl.val();
                     if (message !== "") {
                         sendMessage();
+                        userStopTyping();
                         messageEl.val("");
-                        messageListEl.append('<li>' + userName + ': ' + message + '</li>');
                         message = "";
                     }
-                });
+                }
 
                 function initSocket() {
                     socket = io();
                     socket.on('connect', function() {
                         setUserName();
                         listenForMessages();
+                        listenForUsersTyping();
                         startApp();
                     });
                 }
@@ -130,8 +160,15 @@
                     });
                 }
 
+                function listenForUsersTyping() {
+                    socket.on('usersTyping', function(usersTypingString) {
+                        $('#users-typing').html(usersTypingString);
+                    });
+                }
+
                 function appendMessage(msg) {
                     messageListEl.append('<li>' + msg + '</li>');
+                    messageListEl.scrollTop(messageListEl[0].scrollHeight - messageListEl.height());
                 }
 
                 function startApp() {
@@ -145,6 +182,14 @@
 
                 function sendMessage() {
                     socket.emit('newMessage', message);
+                }
+
+                function userTyping() {
+                    socket.emit('userTyping');
+                }
+
+                function userStopTyping() {
+                    socket.emit('userStopTyping');
                 }
             });
         </script>

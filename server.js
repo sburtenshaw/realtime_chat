@@ -58,16 +58,33 @@ io.on('connection', function(socket) {
         }
     });
 
-    users.push(createNewUser(socket));
-});
+    socket.on('userTyping', function() {
+        setUserTyping(true);
+    });
 
-function createNewUser(socket) {
-    return {
-        socket: socket,
-        userName: "",
-        messages: []
+    socket.on('userStopTyping', function() {
+        setUserTyping(false);
+    });
+
+    function createNewUser() {
+        return {
+            socket: socket,
+            userName: "",
+            messages: []
+        }
     }
-}
+
+    function setUserTyping(bool) {
+        for (var i = 0; i < users.length; i++) {
+            if (users[i].socket.id === socket.id) {
+                users[i].typing = bool;
+                emitUsersTyping(getUsersTypingString());
+            }
+        }
+    }
+
+    users.push(createNewUser());
+});
 
 function addMessage(details) {
     for (var i = 0; i < users.length; i++) {
@@ -80,6 +97,42 @@ function emitMessages() {
     for (var i = 0; i < users.length; i++) {
         io.to(users[i].socket.id).emit('messageList', users[i].messages);
     }
+}
+
+function emitUsersTyping(usersTypingString) {
+    io.emit('usersTyping', usersTypingString);
+}
+
+function getUsersTypingString() {
+    var typing = [],
+        typingString = "",
+        i;
+    for (i = 0; i < users.length; i++) {
+        if (users[i].typing) {
+            typing.push(users[i].userName);
+        }
+    }
+    for (i = 0; i < typing.length; i++) {
+        if (i === 0) {
+            typingString += typing[i];
+        } else if (typing.length === 2) {
+            typingString += " and " + typing[i];
+        } else {
+            if ((i + 1) === typing.length) {
+                typingString += " and " + typing[i];
+            } else {
+                typingString += ", " + typing[i];
+            }
+        }
+        if ((i + 1) === typing.length) {
+            if (typing.length === 1) {
+                typingString += " is typing...";
+            } else {
+                typingString += " are typing...";
+            }
+        }
+    }
+    return typingString;
 }
 
 http.listen(port, function() {
