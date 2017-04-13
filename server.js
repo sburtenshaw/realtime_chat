@@ -15,7 +15,9 @@ app.get('/', function(req, res) {
 });
 
 io.on('connection', function(socket) {
+    console.log("Connection " + socket.id);
     socket.on('disconnect', function() {
+        console.log("Disconnection " + socket.id);
         for (var i = 0; i < users.length; i++) {
             if (users[i].socket.id === socket.id) {
                 addMessage({
