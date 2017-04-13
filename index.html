@@ -62,14 +62,13 @@
     <body>
         <h1 class="title">Realtime chat</h1>
         <div class="user-disconnected input-wrapper">
-            <p>Please enter your name:</p>
+            <p>Please enter a user name:</p>
             <input type="text" id="user-name"/>
             <button>Next</button>
         </div>
         <div class="user-connected">
             <ul></ul>
             <div class="message-input input-wrapper">
-                <p>Please enter your message:</p>
                 <input type="text" id="user-message" placeholder="Enter your message"/>
                 <button>Send</button>
             </div>
@@ -102,10 +101,12 @@
                 });
 
                 function initSocket() {
-                    socket = io();
-                    setUserName();
-                    listenForMessages();
-                    startApp();
+                    socket = io()
+                    socket.on('connect', function() {
+                        setUserName();
+                        listenForMessages();
+                        startApp();
+                    });
                 }
 
                 function listenForMessages() {
@@ -113,7 +114,8 @@
                         messageListEl.html("");
                         for (var i = 0; i < messages.length; i++) {
                             switch (messages[i].type) {
-                                case 'joined':
+                                case 'connected':
+                                case 'disconnected':
                                     appendMessage(messages[i].userName + ' ' + messages[i].message);
                                     break;
                                 case 'message':
@@ -138,7 +140,6 @@
 
                 function setUserName() {
                     socket.emit('userName', userName);
-                    //appendMessage("Welcome " + userName);
                 }
 
                 function sendMessage() {

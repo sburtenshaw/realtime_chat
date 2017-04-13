@@ -9,76 +9,75 @@ var io = require('socket.io')(http);
 var port = 3000;
 
 var users = [];
-var messages = [];
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
 io.on('connection', function(socket) {
-    console.log('New connection: ' + socket.id);
     socket.on('disconnect', function() {
-        console.log('User disconnected: ' + socket.id);
         for (var i = 0; i < users.length; i++) {
-            if (users[i].socketId === socket.id) {
+            if (users[i].socket.id === socket.id) {
+                addMessage({
+                    userName: users[i].userName,
+                    message: " left",
+                    type: "disconnected"
+                });
                 users.splice(i, 1);
                 break;
             }
         }
     });
 
-    users.push(createNewUser(socket.id));
-
     socket.on('userName', function(name) {
         for (var i = 0; i < users.length; i++) {
-            if (users[i].socketId === socket.id) {
+            if (users[i].socket.id === socket.id) {
                 users[i].userName = name;
-                messages.push({
+                addMessage({
                     userName: name,
                     message: " joined",
-                    type: "joined"
+                    type: "connected"
                 });
-                emitMessages();
+                break;
             }
         }
     });
 
     socket.on('newMessage', function(msg) {
         for (var i = 0; i < users.length; i++) {
-            if (users[i].socketId === socket.id) {
-                messages.push({
+            if (users[i].socket.id === socket.id) {
+                addMessage({
                     userName: users[i].userName,
                     message: msg,
                     type: "message"
                 });
-                emitMessages();
+                break;
             }
         }
     });
+
+    users.push(createNewUser(socket));
 });
 
-function findUser(socketId) {
-    for (var i = 0; i < users.length; i++) {
-        if (users[i].socketId === socketId) {
-            return users[i];
-        }
-    }
-}
-
-function createNewUser(socketId) {
+function createNewUser(socket) {
     return {
-        socketId: socketId,
+        socket: socket,
         userName: "",
         messages: []
     }
 }
 
-function broadcastEmitMessage(socket, msg) {
-    socket.broadcast.emit('newMessage', msg);
+function addMessage(details) {
+    for (var i = 0; i < users.length; i++) {
+        users[i].messages.push(details);
+    }
+    emitMessages();
 }
 
 function emitMessages() {
-    io.emit('messageList', messages);
+    for (var i = 0; i < users.length; i++) {
+        io.to(users[i].socket.id).emit('messageList', users[i].messages);
+    }
 }
 
 http.listen(port, function() {
