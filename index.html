@@ -88,7 +88,6 @@
                     userName = userNameEl.val();
                     if (userName !== "") {
                         initSocket();
-                        userNameEl.val("");
                     }
                 });
 
@@ -109,19 +108,37 @@
                     startApp();
                 }
 
-                function setUserName() {
-                    socket.emit('userName', userName);
+                function listenForMessages() {
+                    socket.on('messageList', function(messages) {
+                        messageListEl.html("");
+                        for (var i = 0; i < messages.length; i++) {
+                            switch (messages[i].type) {
+                                case 'joined':
+                                    appendMessage(messages[i].userName + ' ' + messages[i].message);
+                                    break;
+                                case 'message':
+                                    appendMessage(messages[i].userName + ': ' + messages[i].message);
+                                    break;
+                            }
+                        }
+                    });
+                    socket.on('newMessage', function(msg) {
+                        appendMessage(msg);
+                    });
                 }
 
-                function listenForMessages() {
-                    socket.on('newMessage', function(msg) {
-                        messageListEl.append('<li>' + msg + '</li>');
-                    });
+                function appendMessage(msg) {
+                    messageListEl.append('<li>' + msg + '</li>');
                 }
 
                 function startApp() {
                     $('.user-disconnected').css('display', 'none');
                     $('.user-connected').css('display', 'block');
+                }
+
+                function setUserName() {
+                    socket.emit('userName', userName);
+                    //appendMessage("Welcome " + userName);
                 }
 
                 function sendMessage() {

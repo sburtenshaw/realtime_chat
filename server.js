@@ -33,9 +33,12 @@ io.on('connection', function(socket) {
         for (var i = 0; i < users.length; i++) {
             if (users[i].socketId === socket.id) {
                 users[i].userName = name;
-                var message = name + " joined";
-                messages.push(message);
-                broadcastEmitMessage(socket, message);
+                messages.push({
+                    userName: name,
+                    message: " joined",
+                    type: "joined"
+                });
+                emitMessages();
             }
         }
     });
@@ -43,10 +46,12 @@ io.on('connection', function(socket) {
     socket.on('newMessage', function(msg) {
         for (var i = 0; i < users.length; i++) {
             if (users[i].socketId === socket.id) {
-                users[i].messages.push(msg);
-                var message = users[i].userName + ": " + msg;
-                messages.push(message);
-                broadcastEmitMessage(socket, message);
+                messages.push({
+                    userName: users[i].userName,
+                    message: msg,
+                    type: "message"
+                });
+                emitMessages();
             }
         }
     });
@@ -72,8 +77,8 @@ function broadcastEmitMessage(socket, msg) {
     socket.broadcast.emit('newMessage', msg);
 }
 
-function emitMessage(msg) {
-    io.emit('newMessage', msg);
+function emitMessages() {
+    io.emit('messageList', messages);
 }
 
 http.listen(port, function() {
