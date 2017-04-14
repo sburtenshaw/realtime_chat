@@ -7,18 +7,28 @@
         <link rel="stylesheet" type="text/css" href="/css/style.css">
     </head>
     <body>
-        <h1 class="title">Realtime chat</h1>
-        <div class="user-disconnected input-wrapper">
-            <p>Please enter a user name:</p>
-            <input type="text" id="user-name"/>
-            <button>Next</button>
-        </div>
-        <div class="user-connected">
-            <ul></ul>
-            <div class="message-input input-wrapper">
-                <p id="users-typing"></p>
-                <input type="text" id="user-message" placeholder="Enter your message"/>
-                <button>Send</button>
+        <div class="container">
+            <div class="header disconnected">
+                <div class="navigation-btn back">
+
+                </div>
+                <h1 class="title">Realtime chat</h1>
+                <div class="navigation-btn users">
+
+                </div>
+            </div>
+            <div class="user-disconnected input-wrapper">
+                <p>Please enter a user name:</p>
+                <input type="text" id="user-name"/>
+                <button>Next</button>
+            </div>
+            <div class="user-connected">
+                <ul></ul>
+                <div class="message-input input-wrapper">
+                    <p id="users-typing"></p>
+                    <input type="text" id="user-message" placeholder="Enter your message"/>
+                    <button>Send</button>
+                </div>
             </div>
         </div>
         <script src="/socket.io/socket.io.js"></script>

@@ -28,17 +28,11 @@ io.on('connection', function(socket) {
     // On disconnect
     socket.on('disconnect', function() {
         console.log("Disconnection " + socket.id);
-        for (var i = 0; i < users.length; i++) {
-            if (users[i].socket.id === socket.id) {
-                addMessage({
-                    userName: users[i].userName,
-                    message: " left",
-                    type: "disconnected"
-                });
-                users.splice(i, 1);
-                break;
-            }
-        }
+        removeUser();
+    });
+
+    socket.on('back', function() {
+        socket.disconnect();
     });
 
     // Runs straight after IO connection (after user types username, connect user and set username)
@@ -94,6 +88,20 @@ io.on('connection', function(socket) {
             if (users[i].socket.id === socket.id) {
                 users[i].typing = bool;
                 emitUsersTyping();
+            }
+        }
+    }
+
+    function removeUser() {
+        for (var i = 0; i < users.length; i++) {
+            if (users[i].socket.id === socket.id) {
+                addMessage({
+                    userName: users[i].userName,
+                    message: " left",
+                    type: "disconnected"
+                });
+                users.splice(i, 1);
+                break;
             }
         }
     }

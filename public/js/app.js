@@ -37,13 +37,29 @@ $(function() {
 
 // Event listeners
 // Entry point
-$('.user-disconnected button').on('click', function($event) {
+$('.user-disconnected button').on('click', function() {
     // If username is set, run initSocket and connect user to server
     checkUserName();
 });
 
-$('.user-connected .message-input button').on('click', function($event) {
+$('.user-connected .message-input button').on('click', function() {
     checkMessage();
+});
+
+$('.header .navigation-btn').on('click', function($event) {
+    var btn = ($event.currentTarget.className.indexOf("back") !== -1 ? "back" : "users");
+    switch (btn) {
+        case "back":
+            userBack();
+            socket = null;
+            setUserConnected(false);
+            userNameEl.val("");
+            userName = "";
+            break;
+        case "users":
+
+            break;
+    }
 });
 
 // Input validation
@@ -124,14 +140,20 @@ function userStopTyping() {
     socket.emit('userStopTyping');
 }
 
+function userBack() {
+    socket.emit('back');
+}
+
 // Helpers
 function setUserConnected(bool) {
     if (bool) {
         $('.user-disconnected').css('display', 'none');
         $('.user-connected').css('display', 'block');
+        $('.header').removeClass('disconnected').addClass('connected');
     } else {
         $('.user-disconnected').css('display', 'block');
         $('.user-connected').css('display', 'none');
+        $('.header').removeClass('connected').addClass('disconnected');
     }
 }
 
