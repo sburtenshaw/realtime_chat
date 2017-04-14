@@ -2,17 +2,22 @@
  * Created by seanburtenshaw on 14/04/2017.
  */
 
-var userName, socket, message;
+// Socket and model variables
+var socket, userName, message;
 
+// DOM elements variables
 var userNameEl,
     messageEl,
     messageListEl;
 
+// On document ready
 $(function() {
+    // Set DOM element variables
     userNameEl = $('#user-name');
     messageEl = $('#user-message');
     messageListEl = $('.user-connected ul');
 
+    // Add event listeners
     userNameEl.on('keyup', function($event) {
         if ($event.keyCode === 13) {
             checkUserName();
@@ -30,6 +35,35 @@ $(function() {
     });
 });
 
+// Event listeners
+// Entry point
+$('.user-disconnected button').on('click', function($event) {
+    // If username is set, run initSocket and connect user to server
+    checkUserName();
+});
+
+$('.user-connected .message-input button').on('click', function($event) {
+    checkMessage();
+});
+
+// Input validation
+function checkUserName() {
+    userName = userNameEl.val();
+    if (userName !== "") {
+        initSocket();
+    }
+}
+
+function checkMessage() {
+    message = messageEl.val();
+    if (message !== "") {
+        sendMessage();
+        userStopTyping();
+        messageEl.val("");
+        message = "";
+    }
+}
+
 // Socket connection
 function initSocket() {
     socket = io();
@@ -43,8 +77,7 @@ function startApp() {
     setUserName();
     listenForMessages();
     listenForUsersTyping();
-    $('.user-disconnected').css('display', 'none');
-    $('.user-connected').css('display', 'block');
+    setUserConnected(true);
 }
 
 // Socket listeners
@@ -91,33 +124,17 @@ function userStopTyping() {
     socket.emit('userStopTyping');
 }
 
-// Event listeners
-$('.user-disconnected button').on('click', function($event) {
-    checkUserName();
-});
-
-$('.user-connected .message-input button').on('click', function($event) {
-    checkMessage();
-});
-
-function checkUserName() {
-    userName = userNameEl.val();
-    if (userName !== "") {
-        initSocket();
-    }
-}
-
-function checkMessage() {
-    message = messageEl.val();
-    if (message !== "") {
-        sendMessage();
-        userStopTyping();
-        messageEl.val("");
-        message = "";
-    }
-}
-
 // Helpers
+function setUserConnected(bool) {
+    if (bool) {
+        $('.user-disconnected').css('display', 'none');
+        $('.user-connected').css('display', 'block');
+    } else {
+        $('.user-disconnected').css('display', 'block');
+        $('.user-connected').css('display', 'none');
+    }
+}
+
 function generateUsersTypingString(usersTyping) {
     var usersTypingString = "";
     for (var i = 0; i < usersTyping.length; i++) {

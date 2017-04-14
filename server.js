@@ -2,19 +2,30 @@
  * Created by seanburtenshaw on 12/04/2017.
  */
 
+// Dependencies
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+// Vars
 var port = 3000;
-
 var users = [];
 
+// Serve public folder
 app.use(express.static('public'));
 
+// Listen on set port
+http.listen(port, function() {
+    console.log('Server started on port ' + port);
+});
+
+// IO entry point
 io.on('connection', function(socket) {
     console.log("Connection " + socket.id);
+    // Push user to users array
+    users.push(createNewUser());
+    // On disconnect
     socket.on('disconnect', function() {
         console.log("Disconnection " + socket.id);
         for (var i = 0; i < users.length; i++) {
@@ -30,6 +41,7 @@ io.on('connection', function(socket) {
         }
     });
 
+    // Runs straight after IO connection (after user types username, connect user and set username)
     socket.on('userName', function(name) {
         for (var i = 0; i < users.length; i++) {
             if (users[i].socket.id === socket.id) {
@@ -44,6 +56,7 @@ io.on('connection', function(socket) {
         }
     });
 
+    // Listen for new messages
     socket.on('newMessage', function(msg) {
         for (var i = 0; i < users.length; i++) {
             if (users[i].socket.id === socket.id) {
@@ -57,14 +70,17 @@ io.on('connection', function(socket) {
         }
     });
 
+    // Listen for users typing
     socket.on('userTyping', function() {
         setUserTyping(true);
     });
 
+    // Listen for users stopping typing
     socket.on('userStopTyping', function() {
         setUserTyping(false);
     });
 
+    // Helpers that require current user socket
     function createNewUser() {
         return {
             socket: socket,
@@ -81,10 +97,9 @@ io.on('connection', function(socket) {
             }
         }
     }
-
-    users.push(createNewUser());
 });
 
+// Helpers that don't require current user socket
 function addMessage(details) {
     for (var i = 0; i < users.length; i++) {
         users[i].messages.push(details);
@@ -107,7 +122,3 @@ function emitUsersTyping() {
         io.to(users[i].socket.id).emit('usersTyping', typing);
     }
 }
-
-http.listen(port, function() {
-    console.log('Server started on port ' + port);
-});
