@@ -23,14 +23,17 @@ http.listen(port, function() {
 // IO entry point
 io.on('connection', function(socket) {
     console.log("Connection " + socket.id);
+
     // Push user to users array
     users.push(createNewUser());
+
     // On disconnect
     socket.on('disconnect', function() {
         console.log("Disconnection " + socket.id);
         removeUser();
     });
 
+    // On back button clicked
     socket.on('back', function() {
         socket.disconnect();
     });
@@ -45,6 +48,9 @@ io.on('connection', function(socket) {
                     message: " joined",
                     type: "connected"
                 });
+
+                // Generate user name list with new user and send to clients
+                emitUserNameList();
                 break;
             }
         }
@@ -101,6 +107,7 @@ io.on('connection', function(socket) {
                     type: "disconnected"
                 });
                 users.splice(i, 1);
+                emitUserNameList();
                 break;
             }
         }
@@ -129,4 +136,12 @@ function emitUsersTyping() {
         }
         io.to(users[i].socket.id).emit('usersTyping', typing);
     }
+}
+
+function emitUserNameList() {
+    var userNameList = [];
+    for (var i = 0; i < users.length; i++) {
+        userNameList.push(users[i].userName);
+    }
+    io.emit('userNameList', userNameList);
 }

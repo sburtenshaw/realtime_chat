@@ -21,21 +21,54 @@ body {
     position: relative;
     height: 28px;
 }
-.header.disconnected .navigation-btn {
-    display: none;
-}
-.header.connected .navigation-btn {
+.header .navigation-btn {
     position: absolute;
-    background-color: black;
+    cursor: pointer;
     width: 28px;
     height: 28px;
     top: 0;
+    z-index: 1;
+    /*background-color: black;*/
+}
+.header.disconnected .navigation-btn {
+    display: none;
 }
 .header .navigation-btn.back {
     left: 0;
 }
+.header .navigation-btn.back .arrow-left-icon {
+    height: 28px;
+    width: 28px;
+}
 .header .navigation-btn.users {
     right: 0;
+}
+.header .navigation-btn.users .users-icon {
+    width: 18px;
+    height: 18px;
+    margin-top: 5px;
+}
+.header .menu {
+    position: absolute;
+    z-index: 2;
+    background-color: #ffffff;
+    border: 1px solid black;
+    padding: 12px;
+    display: none;
+}
+.header .menu.show {
+    display: block;
+}
+.header .menu.user-list {
+    width: auto;
+    right: 0;
+    top: 40px;
+    max-height: 190px;
+    overflow-y: auto;
+}
+.header .menu.user-list ul li {
+    list-style: none;
+    margin: 4px 0;
 }
 .header .title {
     font-size: 24px;
@@ -54,7 +87,7 @@ body {
     position: relative;
 }
 .user-connected ul {
-    max-height: calc(100% - 90px);
+    max-height: calc(100% - 98px);
     overflow-y: auto;
 }
 .user-connected ul li {

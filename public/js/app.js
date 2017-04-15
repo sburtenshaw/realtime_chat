@@ -8,7 +8,8 @@ var socket, userName, message;
 // DOM elements variables
 var userNameEl,
     messageEl,
-    messageListEl;
+    messageListEl,
+    userListMenuEl;
 
 // On document ready
 $(function() {
@@ -16,6 +17,7 @@ $(function() {
     userNameEl = $('#user-name');
     messageEl = $('#user-message');
     messageListEl = $('.user-connected ul');
+    userListMenuEl = $('.menu.user-list');
 
     // Add event listeners
     userNameEl.on('keyup', function($event) {
@@ -55,9 +57,10 @@ $('.header .navigation-btn').on('click', function($event) {
             setUserConnected(false);
             userNameEl.val("");
             userName = "";
+            if (userListMenuEl.hasClass('show')) toggleUserListMenu();
             break;
         case "users":
-
+            toggleUserListMenu();
             break;
     }
 });
@@ -93,6 +96,7 @@ function startApp() {
     setUserName();
     listenForMessages();
     listenForUsersTyping();
+    listenForUserNameList();
     setUserConnected(true);
 }
 
@@ -120,6 +124,15 @@ function listenForMessages() {
 function listenForUsersTyping() {
     socket.on('usersTyping', function(usersTyping) {
         $('#users-typing').html(generateUsersTypingString(usersTyping));
+    });
+}
+
+function listenForUserNameList() {
+    socket.on('userNameList', function(userNameList) {
+        userListMenuEl.find('ul').html("");
+        for (var i = 0; i < userNameList.length; i++) {
+            userListMenuEl.find('ul').append('<li>' + userNameList[i] + '</li>');
+        }
     });
 }
 
@@ -185,4 +198,12 @@ function generateUsersTypingString(usersTyping) {
 function appendMessage(msg) {
     messageListEl.append('<li>' + msg + '</li>');
     messageListEl.scrollTop(messageListEl[0].scrollHeight - messageListEl.height());
+}
+
+function toggleUserListMenu() {
+    if (userListMenuEl.hasClass('show')) {
+        userListMenuEl.removeClass('show');
+    } else {
+        userListMenuEl.addClass('show');
+    }
 }
