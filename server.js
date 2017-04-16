@@ -176,14 +176,14 @@ function emitUserNameList() {
     io.emit('userNameList', userNameList);
 }
 
-function emitServerRestart() {
-    io.emit('serverRestart');
-}
-
 function restartServer() {
-    emitServerRestart();
-    http.close();
-    users = [];
+    for (var i = (users.length - 1); i >= 0; i--) {
+        users[i].socket.disconnect();
+        users.splice(i, 1);
+    }
+    setTimeout(function() {
+        http.close();
+    }, 50);
     setTimeout(function() {
         startServer();
     }, 100);

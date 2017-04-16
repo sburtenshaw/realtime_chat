@@ -101,7 +101,6 @@ function initListeners() {
     listenForMessages();
     listenForUsersTyping();
     listenForUserNameList();
-    listenForServerRestart();
 }
 
 // Socket listeners
@@ -136,12 +135,6 @@ function listenForUserNameList() {
         for (var i = 0; i < userNameList.length; i++) {
             userListMenuEl.find('ul').append('<li>' + userNameList[i] + '</li>');
         }
-    });
-}
-
-function listenForServerRestart() {
-    socket.on('serverRestart', function() {
-        disconnectUser();
     });
 }
 
