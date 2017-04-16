@@ -53,11 +53,7 @@ $('.header .navigation-btn').on('click', function($event) {
     switch (btn) {
         case "back":
             userBack();
-            socket = null;
-            setUserConnected(false);
-            userNameEl.val("");
-            userName = "";
-            if (userListMenuEl.hasClass('show')) toggleUserListMenu();
+            disconnectUser();
             break;
         case "users":
             toggleUserListMenu();
@@ -89,15 +85,23 @@ function initSocket() {
     socket.on('connect', function() {
         startApp();
     });
+    socket.on('disconnect', function() {
+        disconnectUser();
+    });
 }
 
 // Initiate main app
 function startApp() {
     setUserName();
+    initListeners();
+    setUserConnected(true);
+}
+
+function initListeners() {
     listenForMessages();
     listenForUsersTyping();
     listenForUserNameList();
-    setUserConnected(true);
+    listenForServerRestart();
 }
 
 // Socket listeners
@@ -113,11 +117,10 @@ function listenForMessages() {
                 case 'message':
                     appendMessage(messages[i].userName + ': ' + messages[i].message);
                     break;
+                case 'serverMessage':
+                    appendMessage("<i> " + messages[i].message + " </i>");
             }
         }
-    });
-    socket.on('newMessage', function(msg) {
-        appendMessage(msg);
     });
 }
 
@@ -133,6 +136,12 @@ function listenForUserNameList() {
         for (var i = 0; i < userNameList.length; i++) {
             userListMenuEl.find('ul').append('<li>' + userNameList[i] + '</li>');
         }
+    });
+}
+
+function listenForServerRestart() {
+    socket.on('serverRestart', function() {
+        disconnectUser();
     });
 }
 
@@ -167,6 +176,11 @@ function setUserConnected(bool) {
         $('.user-disconnected').css('display', 'block');
         $('.user-connected').css('display', 'none');
         $('.header').removeClass('connected').addClass('disconnected');
+        $('#users-typing').html("");
+        if (userListMenuEl.hasClass('show')) toggleUserListMenu();
+        userListMenuEl.find('ul').html("");
+        userNameEl.val("");
+        userName = "";
     }
 }
 
@@ -206,4 +220,9 @@ function toggleUserListMenu() {
     } else {
         userListMenuEl.addClass('show');
     }
+}
+
+function disconnectUser() {
+    socket = null;
+    setUserConnected(false);
 }
