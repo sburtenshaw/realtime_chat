@@ -12,7 +12,8 @@ var io = require('socket.io')(http);
 var port = 3000;
 var users = [];
 var admins = [
-    "sburtenshaw"
+    "sburtenshaw",
+    "ells"
 ];
 var commands = {
     help: function(socketId) {
@@ -25,13 +26,21 @@ var commands = {
     restart: function() {
         restartServer();
     },
-    kick: function(userName,socketId) {
+    kick: function(userName, socketId) {
         emitUserMessage({
             userName: null,
             message: "Kicking user: " + userName,
             type: "serverMessage"
         }, socketId);
         removeUserByUserName(userName);
+    },
+    clear: function() {
+        clearMessages();
+        addMessage({
+            userName: null,
+            message: "Chat cleared",
+            type: "serverMessage"
+        });
     }
 };
 
@@ -143,6 +152,13 @@ function addMessage(details) {
     emitMessages();
 }
 
+function clearMessages() {
+    for (var i = 0; i < users.length; i++) {
+        users[i].messages = [];
+    }
+    emitMessages();
+}
+
 function emitMessages() {
     for (var i = 0; i < users.length; i++) {
         io.to(users[i].socket.id).emit('messageList', users[i].messages);
@@ -236,7 +252,7 @@ function buildHelpString() {
         if (commands[key].length) {
             var arguments = commands[key].toString().match(/\(.*?\)/)[0].replace(/[()]/gi,'').replace(/\s/gi,'').split(',');
             for (var i = 0; i < arguments.length; i++) {
-                if (arguments[i] !== "socketId") helpString += " [" + arguments[i] + "]";
+                if (arguments[i] !== "socketId") helpString += " " + arguments[i];
             }
         }
         helpString += "<br/>";

@@ -180,6 +180,7 @@ function setUserConnected(bool) {
 function generateUsersTypingString(usersTyping) {
     var usersTypingString = "";
     for (var i = 0; i < usersTyping.length; i++) {
+        // usersTyping[i] = string (user name of a user)
         if (i === 0) {
             usersTypingString += usersTyping[i];
         } else if (usersTyping.length === 2) {
