@@ -34,6 +34,16 @@ var commands = {
         }, socketId);
         removeUserByUserName(userName);
     },
+    kickAll: function(socketId) {
+        emitUserMessage({
+            userName: null,
+            message: "Kicking all users",
+            type: "serverMessage"
+        }, socketId);
+        for (var i = (users.length - 1); i >= 0; i--) {
+            if (users[i].socket.id !== socketId) users[i].socket.disconnect();
+        }
+    },
     clear: function() {
         clearMessages();
         addMessage({
